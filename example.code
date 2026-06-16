@@ -1,0 +1,8 @@
+int main() {
+    vec3 posicao = {1.0, 2.0, 3.0};
+    vec3 velocidade = {0.5, 0.0, 0.0};
+    float tempo = 10.0;
+    
+    vec3 destino = posicao + (velocidade * tempo);
+    return 0;
+}

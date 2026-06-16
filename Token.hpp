@@ -1,0 +1,30 @@
+#include <string_view>
+#include <variant>
+
+enum class TokenType
+{
+  Identifier,    // variable names
+  Number,        // 1.0, 2.0, 10
+  KeywordInt,    // int
+  KeywordFloat,  // float
+  KeywordVec3,   // vec3
+  KeywordReturn, // return
+  Plus,          // +
+  Asterisk,      // *
+  Assign,        // =
+  OpenBrace,     // {
+  CloseBrace,    // }
+  OpenParen,     // (
+  CloseParen,    // )
+  Semicolon,     // ;
+  Comma,         // ,
+  EndOfFile
+};
+
+struct Token {
+  TokenType type;
+  std::string_view lexeme;
+  // Error handling
+  int line;
+  int column;
+};
