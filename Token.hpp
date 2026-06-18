@@ -12,16 +12,19 @@ enum class TokenType
   Plus,          // +
   Asterisk,      // *
   Assign,        // =
+  Equals,        // ==
   OpenBrace,     // {
   CloseBrace,    // }
   OpenParen,     // (
   CloseParen,    // )
   Semicolon,     // ;
   Comma,         // ,
-  EndOfFile
+  EndOfFile,
+  Unknown
 };
 
-struct Token {
+struct Token
+{
   TokenType type;
   std::string_view lexeme;
   // Error handling

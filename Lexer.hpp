@@ -22,4 +22,5 @@ private:
   char peek() const;
   char advance();
   void skipWhiteSpace();
+  TokenType checkKeyword(std::string_view lexeme) const;
 };
