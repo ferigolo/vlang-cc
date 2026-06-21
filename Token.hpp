@@ -10,7 +10,9 @@ enum class TokenType
   KeywordVec3,   // vec3
   KeywordReturn, // return
   Plus,          // +
+  Minus,         // -
   Asterisk,      // *
+  Slash,         // /
   Assign,        // =
   Equals,        // ==
   OpenBrace,     // {
