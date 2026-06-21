@@ -2,8 +2,6 @@
 
 #include <charconv>
 
-#include "CompilerError.hpp"
-
 // Statement​ -> Identifier ’=’ Expr ’;'
 // Expr      -> Term((’+’∣’-’) Term)∗
 // Term      -> Factor((’*’∣’/’) Factor)∗
@@ -39,14 +37,12 @@ std::unique_ptr<ExprAST> Parser::parseFactor() {
       getNextToken();  // Consumes '('
       auto v = parseExpr();
       if (currentToken.type != TokenType::CloseParen)
-        throw CompilerError("Sintax error: Expected ')'", currentToken.line,
-                            currentToken.column);
+        return reportError("Expected ')'.");
       getNextToken();  // Consumes ')'
       return v;
     }
     default:
-      throw CompilerError("Sintax error: Unespected factor.", currentToken.line,
-                          currentToken.column);
+      return reportError("Unexpected factor");
   }
 }
 
@@ -89,25 +85,20 @@ std::unique_ptr<ExprAST> Parser::parseExpr() {
 // Statement​ -> Identifier ’=’ Expr ’;'
 std::unique_ptr<ExprAST> Parser::parseStatement() {
   if (currentToken.type != TokenType::Identifier)
-    throw CompilerError(
-        "Sintatic error: Variable name espected at the beggining of statement",
-        currentToken.line, currentToken.column);
+    return reportError("Variable name expected at the beginning of statement");
 
   std::string varName = std::string(currentToken.lexeme);
   getNextToken();
 
   if (currentToken.type != TokenType::Assign)
-    throw CompilerError("Expected '=' after variable name.", currentToken.line,
-                        currentToken.column);
-
+    return reportError("Expected '=' after variable name.");
   getNextToken();  // Consumes '='
 
   auto expr = parseExpr();
   if (!expr) return nullptr;
 
   if (currentToken.type != TokenType::Semicolon)
-    throw CompilerError("Expected ';' at end of statement.", currentToken.line,
-                        currentToken.column);
+    return reportError("Expected ';' at end of statement.");
   getNextToken();  // Consumes ';'
 
   return std::make_unique<AssignExprAST>(varName, std::move(expr));
@@ -118,7 +109,7 @@ std::vector<std::unique_ptr<ExprAST>> Parser::parse() {
   while (currentToken.type != TokenType::EndOfFile) {
     if (auto statement = parseStatement())
       programAST.push_back(std::move(statement));
-    else // Error - we continue to try to recover
+    else  // Error - we continue to try to recover
       getNextToken();
   }
 

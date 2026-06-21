@@ -10,7 +10,8 @@
 #include <cstdint>
 #include <unordered_map>
 
-Lexer::Lexer(std::string_view src) : source(src) {}
+Lexer::Lexer(std::string_view src, DiagnosticEngine& diagEng)
+    : source(src), diagEngine(diagEng) {}
 
 Token Lexer::getNextToken() {
   skipWhiteSpace();
@@ -54,29 +55,38 @@ Token Lexer::getNextToken() {
   // Operators and punctuation
   switch (c) {
     case '+':
+      advance();
       return Token{TokenType::Plus, source.substr(startPos, 1), line, startCol};
     case '*':
+      advance();
       return Token{TokenType::Asterisk, source.substr(startPos, 1), line,
                    startCol};
     case '{':
+      advance();
       return Token{TokenType::OpenBrace, source.substr(startPos, 1), line,
                    startCol};
     case '}':
+      advance();
       return Token{TokenType::CloseBrace, source.substr(startPos, 1), line,
                    startCol};
     case '(':
+      advance();
       return Token{TokenType::OpenParen, source.substr(startPos, 1), line,
                    startCol};
     case ')':
+      advance();
       return Token{TokenType::CloseParen, source.substr(startPos, 1), line,
                    startCol};
     case ';':
+      advance();
       return Token{TokenType::Semicolon, source.substr(startPos, 1), line,
                    startCol};
     case ',':
+      advance();
       return Token{TokenType::Comma, source.substr(startPos, 1), line,
                    startCol};
     case '=':
+      advance();  // Consumes first '='
       if (peek() == '=') {
         advance();  // Consumes second '='
         return Token{TokenType::Equals, source.substr(startPos, 2), line,
@@ -88,6 +98,9 @@ Token Lexer::getNextToken() {
 
   // Let the parser handles erros or unknown simbols - this groups all erros
   // together and keep the parser responsible for errors (SOLID)
+  advance();  // Consumes the unknown character to prevent infinite loops
+  diagEngine.report(DiagnosticLevel::Error, "Unknown symbol encountered.", line,
+                    column);
   return Token{TokenType::Unknown, source.substr(startPos, 1), line, column};
 }
 
