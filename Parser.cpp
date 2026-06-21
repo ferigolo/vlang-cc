@@ -112,3 +112,20 @@ std::unique_ptr<ExprAST> Parser::parseStatement() {
 
   return std::make_unique<AssignExprAST>(varName, std::move(expr));
 }
+
+std::vector<std::unique_ptr<ExprAST>> Parser::parse() {
+  std::vector<std::unique_ptr<ExprAST>> programAST;
+  while (currentToken.type != TokenType::EndOfFile) {
+    if (auto statement = parseStatement())
+      programAST.push_back(std::move(statement));
+    else // Error - we continue to try to recover
+      getNextToken();
+  }
+
+  return programAST;
+}
+
+// Statement​ -> Identifier ’=’ Expr ’;'
+// Expr      -> Term((’+’∣’-’) Term)∗
+// Term      -> Factor((’*’∣’/’) Factor)∗
+// Factor    -> Identifier ∣ Number ∣ ’(’ Expr ’)’​
