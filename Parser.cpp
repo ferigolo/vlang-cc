@@ -14,14 +14,16 @@ std::unique_ptr<ExprAST> Parser::parseNumberExpr() {
   std::from_chars(currentToken.lexeme.data(),
                   currentToken.lexeme.data() + currentToken.lexeme.size(), val);
   // Create new node
-  auto result = std::make_unique<NumberExprAST>(val);
+  auto result = std::make_unique<NumberExprAST>(val, currentToken.line,
+                                                currentToken.column);
   getNextToken();
   return std::move(result);
 }
 
 // Variable node
 std::unique_ptr<ExprAST> Parser::parseVariableExpr() {
-  auto result = std::make_unique<VariableExprAST>(currentToken.lexeme);
+  auto result = std::make_unique<VariableExprAST>(
+      currentToken.lexeme, currentToken.line, currentToken.column);
   getNextToken();
   return std::move(result);
 }
@@ -54,12 +56,14 @@ std::unique_ptr<ExprAST> Parser::parseTerm() {
   while (currentToken.type == TokenType::Asterisk ||
          currentToken.type == TokenType::Slash) {
     char op = currentToken.type == TokenType::Asterisk ? '*' : '/';
+    int l = currentToken.line, c = currentToken.column;
     getNextToken();
 
     auto rhs = parseFactor();  // Right hand side
     if (!rhs) return nullptr;
 
-    lhs = std::make_unique<BinaryExprAST>(op, std::move(lhs), std::move(rhs));
+    lhs = std::make_unique<BinaryExprAST>(op, std::move(lhs), std::move(rhs), l,
+                                          c);
   }
 
   return lhs;
@@ -72,12 +76,14 @@ std::unique_ptr<ExprAST> Parser::parseExpr() {
   while (currentToken.type == TokenType::Plus ||
          currentToken.type == TokenType::Minus) {
     char op = currentToken.type == TokenType::Plus ? '+' : '-';
+    int l = currentToken.line, c = currentToken.column;
     getNextToken();
 
     auto rhs = parseTerm();  // Right hand side
     if (!rhs) return nullptr;
 
-    lhs = std::make_unique<BinaryExprAST>(op, std::move(lhs), std::move(rhs));
+    lhs = std::make_unique<BinaryExprAST>(op, std::move(lhs), std::move(rhs), l,
+                                          c);
   }
   return lhs;
 }
@@ -112,7 +118,10 @@ std::vector<std::unique_ptr<ExprAST>> Parser::parse() {
     else  // Error - we continue to try to recover
       getNextToken();
   }
-
+  diagEngine.report(DiagnosticLevel::Note,
+                    std::format("Successfully build AST with {} statements",
+                                programAST.size()),
+                    currentToken.line, currentToken.column);
   return programAST;
 }
 

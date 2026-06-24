@@ -7,6 +7,8 @@
 #include "DiagnosticEngine.hpp"
 #include "Lexer.hpp"
 
+// Checks the syntax and builds the AST
+// Does not handle semantic analysis (next stage), only checks the structure of the code
 class Parser {
  private:
   Lexer& lexer;

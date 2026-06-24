@@ -24,8 +24,9 @@ class DiagnosticEngine {
     if (level == DiagnosticLevel::Error) hasErrors = true;
   }
   bool hasError() const { return hasErrors; }
-  
+
   // Print all collected errors beautifully
+  // Appends a dot at the end of each message
   void printDiagnostics() const {
     for (const auto& diag : diagnostics) {
       std::string prefix;
@@ -40,8 +41,8 @@ class DiagnosticEngine {
           prefix = "\033[36m[NOTE]\033[0m ";
           break;  // Cyan
       }
-      std::cerr << prefix << "Line " << diag.line << ", Col " << diag.column
-                << ": " << diag.message << ".\n";
+      std::println(std::cerr, "{} Line {}, Col {} : {}.", prefix, diag.line,
+                   diag.column, diag.message);
     }
   }
 };
