@@ -1,18 +1,5 @@
 #include "SemanticAnalyzer.hpp"
 
-std::string typeToString(ValueType type) {
-  switch (type) {
-    case ValueType::Int:
-      return "Int";
-    case ValueType::Float:
-      return "Float";
-    case ValueType::Vec3:
-      return "Vec3";
-    default:
-      return "Unknown";
-  }
-}
-
 void SemanticAnalyzer::analyze(ExprAST* rootNode) {
   if (rootNode)
     rootNode->accept(*this);
@@ -28,16 +15,7 @@ void SemanticAnalyzer::visit(NumberExprAST& node) {
 
 void SemanticAnalyzer::visit(VariableExprAST& node) {
   const std::string& name = node.getName();
-  auto it = symTable.find(name);
-  if (it == symTable.end()) {
-    diagEng.report(
-        DiagnosticLevel::Error,
-        std::format("Variable '{}' has not been declared", node.getName()),
-        node.getLine(), node.getColumn());
-    currentType = ValueType::Unknown;
-    return;
-  }
-  currentType = it->second;
+  currentType = symTable.lookupVariable(name, node.getLine(), node.getColumn());
 }
 
 void SemanticAnalyzer::visit(BinaryExprAST& node) {
@@ -76,26 +54,6 @@ void SemanticAnalyzer::visit(AssignExprAST& node) {
   ValueType exprType = currentType;
 
   if (exprType == ValueType::Unknown) return;
-
-  const std::string& varName = node.getName();
-  auto it = symTable.find(varName);
-
-  if (it != symTable.end()) {
-    if (it->second != exprType) {
-      diagEng.report(
-          DiagnosticLevel::Error,
-          std::format("Attempy to assign {} to variable '{}' of type {}",
-                      typeToString(exprType), varName,
-                      typeToString(it->second)),
-          node.getLine(), node.getColumn());
-    }
-  } else {
-    symTable[varName] = exprType;
-    diagEng.report(
-        DiagnosticLevel::Warning,
-        std::format(
-            "Variable '{}' was declared implicitly with infered type of {}",
-            varName, typeToString(exprType)),
-        node.getLine(), node.getColumn());
-  }
+  symTable.assignVariable(node.getName(), exprType, node.getLine(),
+                          node.getColumn());
 }
