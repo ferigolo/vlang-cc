@@ -46,7 +46,20 @@ void SemanticAnalyzer::visit(BinaryExprAST& node) {
     return;
   }
 
-  currentType = leftType;  // Valid math, we keep the type
+  TokenType op = node.getOperator();
+  bool isMath = (op == TokenType::Plus || op == TokenType::Minus ||
+                 op == TokenType::Asterisk || op == TokenType::Slash);
+  bool isRelational =
+      (op == TokenType::Equals || op == TokenType::NotEquals ||
+       op == TokenType::LessThan || op == TokenType::LessEqual ||
+       op == TokenType::GreaterThan || op == TokenType::GreaterEqual);
+
+  if (isMath)
+    currentType = leftType;  // Float + Float = Float
+  else if (isRelational)
+    currentType = ValueType::Bool;  // Float < Float = Bool
+  else
+    currentType = ValueType::Unknown;
 }
 
 void SemanticAnalyzer::visit(AssignExprAST& node) {

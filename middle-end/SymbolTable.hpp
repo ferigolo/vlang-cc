@@ -5,7 +5,7 @@
 
 #include "DiagnosticEngine.hpp"
 
-enum class ValueType { Int, Float, Vec3, Unknown };
+enum class ValueType { Int, Float, Vec3, Bool, Unknown };
 
 inline std::string typeToString(ValueType type) {
   switch (type) {
@@ -15,6 +15,8 @@ inline std::string typeToString(ValueType type) {
       return "Float";
     case ValueType::Vec3:
       return "Vec3";
+    case ValueType::Bool:
+      return "Bool";
     default:
       return "Unknown";
   }

@@ -2,10 +2,11 @@
 
 #include <charconv>
 
-// Statement​ -> Identifier ’=’ Expr ’;'
-// Expr      -> Term((’+’∣’-’) Term)∗
-// Term      -> Factor((’*’∣’/’) Factor)∗
-// Factor    -> Identifier ∣ Number ∣ ’(’ Expr ’)’​
+// Statement​      -> Identifier ’=’ Expr ’;'
+// Expr           -> Term((’+’∣’-’) Term)∗
+// RelationalExpr -> Expr(('==' | '!=' | '<' | etc) Expr) *
+// Term           -> Factor((’*’∣’/’) Factor)∗
+// Factor         -> Identifier ∣ Number ∣ ’(’ Expr ’)’​
 
 // Number node
 std::unique_ptr<ExprAST> Parser::parseNumberExpr() {
@@ -18,6 +19,29 @@ std::unique_ptr<ExprAST> Parser::parseNumberExpr() {
                                                 currentToken.column);
   getNextToken();
   return std::move(result);
+}
+
+std::unique_ptr<ExprAST> Parser::parseRelationalExpr() {
+  auto lhs = parseExpr();
+  if (!lhs) return nullptr;
+
+  while (currentToken.type == TokenType::Equals ||
+         currentToken.type == TokenType::NotEquals ||
+         currentToken.type == TokenType::LessThan ||
+         currentToken.type == TokenType::LessEqual ||
+         currentToken.type == TokenType::GreaterThan ||
+         currentToken.type == TokenType::GreaterEqual) {
+    TokenType op = currentToken.type;
+    int line = currentToken.line;
+    int col = currentToken.column;
+    getNextToken();  // Consumes operator
+
+    auto rhs = parseExpr();
+    if (!rhs) return nullptr;
+
+    lhs = std::make_unique<BinaryExprAST>(op, std::move(lhs), std::move(rhs),
+                                          line, col);
+  }
 }
 
 // Variable node
@@ -115,8 +139,8 @@ std::vector<std::unique_ptr<ExprAST>> Parser::parse() {
   while (currentToken.type != TokenType::EndOfFile) {
     if (auto statement = parseStatement())
       programAST.push_back(std::move(statement));
-    else  // Error - we continue to try to recover
-      getNextToken();
+    else
+      getNextToken();  // Error - we continue to try to recover
   }
   diagEngine.report(DiagnosticLevel::Note,
                     std::format("Successfully build AST with {} statements",

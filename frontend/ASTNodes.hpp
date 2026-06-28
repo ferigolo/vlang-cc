@@ -4,13 +4,13 @@
 #include <string_view>
 
 #include "ASTVisitor.hpp"
+#include "Token.hpp"
 
 // Base interface class
 // Represents any node which makes part of the expression
 class ExprAST {
  protected:
-  int line;
-  int column;
+  int line, column;
 
  public:
   ExprAST(int l = 0, int c = 0) : line(l), column(c) {}
@@ -26,19 +26,19 @@ class ExprAST {
 // Operators - Tree nodes
 class BinaryExprAST : public ExprAST {
  private:
-  char op;                       // (+, -, *, /)
+  TokenType op;  // (+, -, *, /) 
   std::unique_ptr<ExprAST> lhs;  // Left hand side
   std::unique_ptr<ExprAST> rhs;  // Right hand side
 
  public:
-  BinaryExprAST(char operation, std::unique_ptr<ExprAST> left,
+  BinaryExprAST(TokenType operation, std::unique_ptr<ExprAST> left,
                 std::unique_ptr<ExprAST> right, int l, int c)
       : ExprAST(l, c),
         op(operation),
         lhs(std::move(left)),
         rhs(std::move(right)) {}
 
-  char getOperator() const { return op; }
+  TokenType getOperator() const { return op; }
   ExprAST* getLHS() const { return lhs.get(); }
   ExprAST* getRHS() const { return rhs.get(); }
 

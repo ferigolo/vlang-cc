@@ -90,10 +90,38 @@ Token Lexer::getNextToken() {
       if (peek() == '=') {
         advance();  // Consumes second '='
         return Token{TokenType::Equals, source.substr(startPos, 2), line,
-                     startCol};  // Isso deveria ser um TokenType::Equals
+                     startCol};
       }
       return Token{TokenType::Assign, source.substr(startPos, 1), line,
                    startCol};
+    case '<':
+      advance();
+      if (peek() == '=') {
+        advance();
+        return Token{TokenType::LessEqual, source.substr(startPos, 2), line,
+                     startCol};
+      }
+      return Token{TokenType::LessThan, source.substr(startPos, 1), line,
+                   startCol};
+
+    case '>':
+      advance();
+      if (peek() == '=') {
+        advance();
+        return Token{TokenType::GreaterEqual, source.substr(startPos, 2), line,
+                     startCol};
+      }
+      return Token{TokenType::GreaterThan, source.substr(startPos, 1), line,
+                   startCol};
+
+    case '!':
+      advance();
+      if (peek() == '=') {
+        advance();
+        return Token{TokenType::NotEquals, source.substr(startPos, 2), line,
+                     startCol};
+      }
+      break;
   }
 
   // Let the parser handles erros or unknown simbols - this groups all erros
