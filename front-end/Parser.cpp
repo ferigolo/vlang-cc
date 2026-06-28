@@ -105,6 +105,7 @@ std::unique_ptr<ExprAST> Parser::parseRelationalExpr() {
     lhs = std::make_unique<BinaryExprAST>(op, std::move(lhs), std::move(rhs),
                                           line, col);
   }
+  return lhs;
 }
 
 // Variable node
@@ -142,7 +143,7 @@ std::unique_ptr<ExprAST> Parser::parseTerm() {
 
   while (currentToken.type == TokenType::Asterisk ||
          currentToken.type == TokenType::Slash) {
-    char op = currentToken.type == TokenType::Asterisk ? '*' : '/';
+    TokenType op = currentToken.type;
     int l = currentToken.line, c = currentToken.column;
     getNextToken();
 
@@ -162,7 +163,7 @@ std::unique_ptr<ExprAST> Parser::parseExpr() {
   if (!lhs) return nullptr;
   while (currentToken.type == TokenType::Plus ||
          currentToken.type == TokenType::Minus) {
-    char op = currentToken.type == TokenType::Plus ? '+' : '-';
+    TokenType op = currentToken.type;
     int l = currentToken.line, c = currentToken.column;
     getNextToken();
 
@@ -177,6 +178,14 @@ std::unique_ptr<ExprAST> Parser::parseExpr() {
 
 // Statement​ -> Identifier ’=’ Expr ’;'
 std::unique_ptr<ExprAST> Parser::parseStatement() {
+  if (currentToken.type == TokenType::KeywordIf) {
+    return parseIfElseStatement();
+  }
+  if (currentToken.type == TokenType::OpenBrace) {
+    return parseBlock();
+  }
+
+  const int line = currentToken.line, col = currentToken.column;
   if (currentToken.type != TokenType::Identifier)
     return reportError("Variable name expected at the beginning of statement");
 
@@ -184,7 +193,7 @@ std::unique_ptr<ExprAST> Parser::parseStatement() {
   getNextToken();
 
   if (currentToken.type != TokenType::Assign)
-    return reportError("Expected '=' after variable name.");
+    return reportError("Expected '=' after variable name");
   getNextToken();  // Consumes '='
 
   auto expr = parseExpr();
@@ -194,7 +203,7 @@ std::unique_ptr<ExprAST> Parser::parseStatement() {
     return reportError("Expected ';' at end of statement.");
   getNextToken();  // Consumes ';'
 
-  return std::make_unique<AssignExprAST>(varName, std::move(expr));
+  return std::make_unique<AssignExprAST>(varName, std::move(expr), line, col);
 }
 
 std::vector<std::unique_ptr<ExprAST>> Parser::parse() {

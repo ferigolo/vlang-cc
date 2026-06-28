@@ -1,0 +1,7 @@
+velocidade = 100.0; 
+
+if (condicao) {
+    velocidade = 5.0;
+    
+    destino = posicao + velocidade; 
+}

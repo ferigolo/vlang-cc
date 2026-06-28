@@ -8,7 +8,7 @@ class AssignExprAST;
 class BlockExprAST;
 class IfExprAST;
 
-// The visitor interface
+// The visitor interface with double dispatch
 class ASTVisitor {
  public:
   virtual ~ASTVisitor() = default;

@@ -2,6 +2,7 @@
 #include <memory>
 #include <string>
 #include <string_view>
+#include <vector>
 
 #include "ASTVisitor.hpp"
 #include "Token.hpp"
@@ -80,7 +81,7 @@ class AssignExprAST : public ExprAST {
  public:
   AssignExprAST(std::string_view varName, std::unique_ptr<ExprAST> expression,
                 int l, int c)
-      : ExprAST(l, c), name(varName), expr(std::move(expression)) {}
+      : name(varName), expr(std::move(expression)), ExprAST(l, c) {}
 
   const std::string& getName() const { return name; }
   ExprAST* getExpr() const { return expr.get(); }

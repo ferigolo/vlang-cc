@@ -6,8 +6,6 @@
 #include "DiagnosticEngine.hpp"
 #include "SymbolTable.hpp"
 
-enum class ValueType { Int, Float, Vec3, Unknown };
-
 class SemanticAnalyzer : public ASTVisitor {
  private:
   SymbolTable symTable;
@@ -16,7 +14,7 @@ class SemanticAnalyzer : public ASTVisitor {
 
  public:
   explicit SemanticAnalyzer(DiagnosticEngine& diag)
-      : diagEng(diag), symTable(diagEng) {}
+      : diagEng(diag), symTable(diag) {}
 
   // Starting point for analyzing a tree
   void analyze(ExprAST* rootNode);

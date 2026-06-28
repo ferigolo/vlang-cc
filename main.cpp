@@ -7,9 +7,13 @@
 
 int main() {
   std::string sourceCode = R"(
-    posicao = 10.0;
-    velocidade = 2.5;
-    destino = posicao + velocidade * 5.0;
+  velocidade = 100.0; 
+
+  if (velocidade == 100) {
+      velocidade = 5.0;
+      
+      destino = posicao + velocidade; 
+  }
 )";  // Example broken code
 
   DiagnosticEngine diagEngine;
@@ -28,9 +32,7 @@ int main() {
   for (auto& node : ast) semantic.analyze(node.get());
 
   diagEngine.printDiagnostics();
-  if (diagEngine.hasError()) {
-    return 1;
-  }
+  if (diagEngine.hasError()) return 1;
 
   std::cout << "Compilation successfull!\n";
   return 0;
