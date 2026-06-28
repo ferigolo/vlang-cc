@@ -70,3 +70,22 @@ void SemanticAnalyzer::visit(AssignExprAST& node) {
   symTable.assignVariable(node.getName(), exprType, node.getLine(),
                           node.getColumn());
 }
+
+void SemanticAnalyzer::visit(BlockExprAST& node) {
+  for (const auto& stmt : node.getStatements()) stmt->accept(*this);
+  currentType = ValueType::Unknown;
+}
+
+void SemanticAnalyzer::visit(IfExprAST& node) {
+  node.accept(*this);
+
+  if (currentType != ValueType::Bool && currentType != ValueType::Unknown)
+    diagEng.report(DiagnosticLevel::Error,
+                   "'if' expression must result in boolean type result",
+                   node.getLine(), node.getColumn());
+
+  node.getThenBlock()->accept(*this);  // Analises if block
+  if (node.getElseBlock())
+    node.getElseBlock()->accept(*this);  // Analises else block
+  currentType = ValueType::Unknown;
+}

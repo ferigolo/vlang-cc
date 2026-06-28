@@ -21,6 +21,69 @@ std::unique_ptr<ExprAST> Parser::parseNumberExpr() {
   return std::move(result);
 }
 
+std::unique_ptr<ExprAST> Parser::parseBlock() {
+  int line = currentToken.line, col = currentToken.column;
+  getNextToken();  // Consumes '{'
+
+  std::vector<std::unique_ptr<ExprAST>> statements;
+
+  while (currentToken.type != TokenType::CloseBrace &&
+         currentToken.type != TokenType::EndOfFile) {
+    if (auto stmt = parseStatement())
+      statements.push_back(std::move(stmt));
+    else
+      getNextToken();
+  }
+
+  if (currentToken.type != TokenType::CloseBrace) {
+    diagEngine.report(DiagnosticLevel::Error, "Expected '}' at the end block",
+                      currentToken.line, currentToken.column);
+    return nullptr;
+  }
+  getNextToken();  // Consumes '}'
+
+  return std::make_unique<BlockExprAST>(std::move(statements), line, col);
+}
+
+std::unique_ptr<ExprAST> Parser::parseIfElseStatement() {
+  int line = currentToken.line, col = currentToken.column;
+  getNextToken();  // Consumes 'if'
+
+  if (currentToken.type != TokenType::OpenParen)
+    return reportError("Expected '(' after 'if' statement", line, col);
+
+  getNextToken();  // Consumes '('
+
+  auto condition = parseRelationalExpr();
+
+  if (currentToken.type != TokenType::CloseParen)
+    return reportError("Expected ')' before 'if' condition");
+  getNextToken();  // Consumes ')'
+
+  if (currentToken.type != TokenType::OpenBrace)
+    return reportError("Expected '{' after 'if' statement");
+
+  auto thenBlock = parseBlock();
+
+  std::unique_ptr<ExprAST> elseBlock = nullptr;
+  if (currentToken.type == TokenType::KeywordElse) {
+    getNextToken();  // Consumes 'else'
+    if (currentToken.type != TokenType::OpenBrace &&
+        currentToken.type != TokenType::KeywordIf)
+      return reportError("Expected '{' or 'if' after else statement");
+
+    if (currentToken.type == TokenType::KeywordIf)
+      elseBlock = parseIfElseStatement();
+    else if (currentToken.type == TokenType::OpenBrace)
+      elseBlock = parseBlock();
+    else
+      return reportError("Expected '{' or 'if' after 'else' keyword");
+  }
+
+  return std::make_unique<IfExprAST>(std::move(condition), std::move(thenBlock),
+                                     std::move(elseBlock), line, col);
+}
+
 std::unique_ptr<ExprAST> Parser::parseRelationalExpr() {
   auto lhs = parseExpr();
   if (!lhs) return nullptr;

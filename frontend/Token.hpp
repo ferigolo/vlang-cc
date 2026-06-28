@@ -8,6 +8,8 @@ enum class TokenType {
   KeywordFloat,   // float
   KeywordVec3,    // vec3
   KeywordReturn,  // return
+  KeywordIf,      // If
+  KeywordElse,    // Else
   Plus,           // +
   Minus,          // -
   Asterisk,       // *

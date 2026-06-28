@@ -20,12 +20,14 @@ class Parser {
 
   std::unique_ptr<ExprAST> parseNumberExpr(), parseRelationalExpr(),
       parseVariableExpr(), parseFactor(), parseTerm(), parseExpr(),
-      parseStatement();
+      parseStatement(), parseBlock(), parseIfElseStatement();
 
   // Helper to log and propagate nullptr
-  std::unique_ptr<ExprAST> reportError(const std::string& message) {
-    diagEngine.report(DiagnosticLevel::Error, message, currentToken.line,
-                      currentToken.column);
+  std::unique_ptr<ExprAST> reportError(const std::string& message, int line = 0,
+                                       int col = 0) {
+    diagEngine.report(DiagnosticLevel::Error, message,
+                      line ? line : currentToken.line,
+                      col ? col : currentToken.column);
     return nullptr;
   };
 

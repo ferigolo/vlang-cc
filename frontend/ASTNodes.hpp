@@ -26,7 +26,7 @@ class ExprAST {
 // Operators - Tree nodes
 class BinaryExprAST : public ExprAST {
  private:
-  TokenType op;  // (+, -, *, /) 
+  TokenType op;                  // (+, -, *, /)
   std::unique_ptr<ExprAST> lhs;  // Left hand side
   std::unique_ptr<ExprAST> rhs;  // Right hand side
 
@@ -84,6 +84,43 @@ class AssignExprAST : public ExprAST {
 
   const std::string& getName() const { return name; }
   ExprAST* getExpr() const { return expr.get(); }
+
+  void accept(ASTVisitor& visitor) override { visitor.visit(*this); }
+};
+
+// Conditional operators
+
+// Represent a code block between brackets { ... }
+class BlockExprAST : public ExprAST {
+ private:
+  std::vector<std::unique_ptr<ExprAST>>  // ExprAST -> polimorfism
+      statements;  // Holds the list of statements inside the block
+
+ public:
+  BlockExprAST(std::vector<std::unique_ptr<ExprAST>> stmts, int l, int c)
+      : ExprAST(l, c), statements(std::move(stmts)) {}
+  const std::vector<std::unique_ptr<ExprAST>>& getStatements() const {
+    return statements;
+  }
+  void accept(ASTVisitor& visitor) override { visitor.visit(*this); };
+};
+
+class IfExprAST : public ExprAST {
+ private:
+  std::unique_ptr<ExprAST> condition, thenBlock,
+      elseBlock;  // else block may be null
+
+ public:
+  IfExprAST(std::unique_ptr<ExprAST> cond, std::unique_ptr<ExprAST> thenB,
+            std::unique_ptr<ExprAST> elseB, int l, int c)
+      : ExprAST(l, c),
+        condition(std::move(cond)),
+        thenBlock(std::move(thenB)),
+        elseBlock(std::move(elseB)) {}
+
+  ExprAST* getCondition() const { return condition.get(); }
+  ExprAST* getThenBlock() const { return thenBlock.get(); }
+  ExprAST* getElseBlock() const { return elseBlock.get(); }
 
   void accept(ASTVisitor& visitor) override { visitor.visit(*this); }
 };

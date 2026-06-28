@@ -24,4 +24,6 @@ class SemanticAnalyzer : public ASTVisitor {
   void visit(VariableExprAST& node) override;
   void visit(BinaryExprAST& node) override;
   void visit(AssignExprAST& node) override;
+  void visit(BlockExprAST& node) override;
+  void visit(IfExprAST& node) override;
 };

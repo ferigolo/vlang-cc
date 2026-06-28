@@ -157,10 +157,9 @@ void Lexer::skipWhiteSpace() {
 
 TokenType Lexer::checkKeyword(std::string_view lexeme) const {
   static const std::unordered_map<std::string_view, TokenType> keywords = {
-      {"int", TokenType::KeywordInt},
-      {"float", TokenType::KeywordFloat},
-      {"vec3", TokenType::KeywordVec3},
-      {"return", TokenType::KeywordReturn}};
+      {"int", TokenType::KeywordInt},   {"float", TokenType::KeywordFloat},
+      {"vec3", TokenType::KeywordVec3}, {"return", TokenType::KeywordReturn},
+      {"if", TokenType::KeywordIf},     {"else", TokenType::KeywordElse}};
 
   auto it = keywords.find(lexeme);
   if (it != keywords.end()) return it->second;  // Reserved key word
@@ -175,8 +174,10 @@ struct KeywordEntry {
 
 // Zero overhead
 // MUST be in alphabetical order
-constexpr std::array<KeywordEntry, 4> keywords = {
-    {{"float", TokenType::KeywordFloat},
+constexpr std::array<KeywordEntry, 6> keywords = {
+    {{"else", TokenType::KeywordElse},
+     {"float", TokenType::KeywordFloat},
+     {"if", TokenType::KeywordIf},
      {"int", TokenType::KeywordInt},
      {"return", TokenType::KeywordReturn},
      {"vec3", TokenType::KeywordVec3}}};
